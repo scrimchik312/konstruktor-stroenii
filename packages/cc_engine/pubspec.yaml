@@ -1,0 +1,15 @@
+name: cc_engine
+description: >-
+  Pure Dart расчётный движок для «Конструктор строений»: сбор нагрузок
+  (СП 20.13330), подбор ленточного фундамента (СП 22/63). Используется из
+  Flutter-клиента как path-зависимость.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.5.4
+
+dependencies: {}
+
+dev_dependencies:
+  test: ^1.24.0
