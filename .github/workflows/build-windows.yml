@@ -56,15 +56,29 @@ jobs:
           }
           Get-ChildItem "build/windows/x64/runner/Release" -Recurse | Measure-Object -Property Length -Sum | Format-List
 
-      - name: Install Inno Setup
+      - name: Locate Inno Setup
+        id: iscc
         shell: pwsh
         run: |
-          choco install innosetup --version=6.2.2 -y --no-progress
+          # На windows-latest runner Inno Setup 6 предустановлен
+          # (`choco install innosetup` падает «newer version already installed»).
+          $candidates = @(
+            "C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+            "C:\Program Files\Inno Setup 6\ISCC.exe"
+          )
+          $iscc = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $iscc) {
+            choco install innosetup -y --no-progress --force
+            $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          }
+          Write-Host "Using ISCC: $iscc"
+          "iscc=$iscc" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
       - name: Build Inno Setup installer
         shell: pwsh
         run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\konstruktor_stroenii.iss
+          $iscc = "${{ steps.iscc.outputs.iscc }}"
+          & "$iscc" installer\konstruktor_stroenii.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Get-ChildItem installer\Output
 
